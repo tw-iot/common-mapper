@@ -1,4 +1,4 @@
-package topic
+package common_mapper
 
 const (
 	//发送 设备在线状态

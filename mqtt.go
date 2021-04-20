@@ -1,7 +1,6 @@
-package mqtt
+package common_mapper
 
 import (
-	"common-mapper/topic"
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	uuid "github.com/satori/go.uuid"
@@ -22,7 +21,7 @@ func MqttInit(projectName string, configGet func([]byte)) {
   监听 配置解析服务发来的采集配置
  */
 func subscribeConfigGet(projectName string, configGet func([]byte)) {
-	topic := fmt.Sprintf(topic.TopicMonitorConfigGet, projectName)
+	topic := fmt.Sprintf(TopicMonitorConfigGet, projectName)
 	token := mqtt_tw.MqttTw.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message)  {
 		log.Printf("subscribeConfigGet message: %s from topic: %s\n", msg.Payload(), msg.Topic())
 		configGet(msg.Payload())

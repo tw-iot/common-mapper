@@ -1,4 +1,4 @@
-package model
+package common_mapper
 
 type DataCollect struct {
 	G  string                   `json:"g"`

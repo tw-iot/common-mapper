@@ -1,4 +1,4 @@
-package model
+package common_mapper
 
 type DeviceConfig struct {
 	TwDevices []TwDevice `json:"devices"`
