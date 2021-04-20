@@ -9,28 +9,27 @@ import (
 	"log"
 )
 
-func MqttInit(projectName string) {
+func MqttInit(projectName string, configGet func([]byte)) {
 	clientId := uuid.NewV4()
-	mqttInfo := mqtt_tw.NewMqttInfo("127.0.0.1", "",
+	mqttInfo := mqtt_tw.NewMqttInfo("192.168.3.112", "",
 		"", projectName + fmt.Sprintf("%s", clientId), 1883)
 	mqtt_tw.MqttInit(&mqttInfo)
 
-	subscribeConfigGet(projectName)
+	subscribeConfigGet(projectName, configGet)
 }
 
 /**
   监听 配置解析服务发来的采集配置
  */
-func subscribeConfigGet(projectName string) {
+func subscribeConfigGet(projectName string, configGet func([]byte)) {
 	topic := fmt.Sprintf(topic.TopicMonitorConfigGet, projectName)
-	token := mqtt_tw.MqttTw.Subscribe(topic, 0, receiveConfigGet)
+	token := mqtt_tw.MqttTw.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message)  {
+		log.Printf("subscribeConfigGet message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+		configGet(msg.Payload())
+	})
 	if token.Wait() && token.Error() != nil {
 		log.Println(token.Error())
 	}
-}
-
-func receiveConfigGet(client mqtt.Client, msg mqtt.Message)  {
-	log.Printf("receiveConfigGet message: %s from topic: %s\n", msg.Payload(), msg.Topic())
 }
 
 func MqttClose() {
