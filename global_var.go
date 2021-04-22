@@ -27,6 +27,9 @@ func globalInit(projectName string)  {
 }
 
 func configCacheMap(deviceConfig []DeviceConfig) {
+	//先清空
+	tenantIdMap = make(map[string]string)
+	labelMap = make(map[string]map[string]interface{})
 	for _, dc := range deviceConfig {
 		for _, dev := range dc.TwDevices {
 			tenantIdMap[dev.Id] = dev.TenantId

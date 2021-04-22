@@ -39,9 +39,11 @@ func subscribeConfigGet(configGet func([]DeviceConfig)) {
 			// 采集程序成功收到配置后反馈通知
 			topicSend := fmt.Sprintf(TopicSendConfigNotify, mapperName)
 			MqttPublish(topicSend, "1")
+
+			configCacheMap(deviceConfig)
+			stopAllCronJob()
+			configGet(deviceConfig)
 		}
-		configCacheMap(deviceConfig)
-		configGet(deviceConfig)
 	})
 	if token.Wait() && token.Error() != nil {
 		log.Println(token.Error())

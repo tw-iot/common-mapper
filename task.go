@@ -49,21 +49,24 @@ func StartCronJob(cronKey string, cycle int64, collect func(), online func()) {
 /**
   停止定时任务
  */
-func StopCronJob(key string) {
-	c := cronDevices[key]
+func StopCronJob(cronKey string) {
+	c := cronDevices[cronKey]
 	if c != nil {
 		c.Stop()
 	}
-	co := cronOnlines[key]
+	co := cronOnlines[cronKey]
 	if co != nil {
 		co.Stop()
 	}
+	//删除key
+	delete(cronDevices, cronKey)
+	delete(cronOnlines, cronKey)
 }
 
 /**
   停止所有定时任务
 */
-func StopAllCronJob() {
+func stopAllCronJob() {
 	for _, cd := range cronDevices {
 		if cd != nil {
 			cd.Stop()
@@ -74,4 +77,7 @@ func StopAllCronJob() {
 			co.Stop()
 		}
 	}
+	//清空map
+	cronDevices = make(map[string]*cron.Cron)
+	cronOnlines = make(map[string]*cron.Cron)
 }
