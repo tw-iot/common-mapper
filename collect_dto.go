@@ -1,9 +1,9 @@
 package common_mapper
 
 type DataCollect struct {
-	G  string                   `json:"g"`
+	Gp string                   `json:"gp"`
 	Id string                   `json:"id"`
 	T  int64                    `json:"t"`
-	V  int                      `json:"v"`
+	V  string                   `json:"v"`
 	D  []map[string]interface{} `json:"d"`
 }

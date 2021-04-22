@@ -20,7 +20,7 @@ type TwConfig struct {
 	DeviceGroupId          string `json:"device_group_id"`
 	GroupNameEn            string `json:"group_name_en"`
 	GatewayProgramConfigId string `json:"gateway_program_config_Id"`
-	Version                int    `json:"version,string"`
+	Version                string `json:"version"`
 	Cycle                  int    `json:"cycle"`
 	Items                  []Item `json:"items"`
 }
