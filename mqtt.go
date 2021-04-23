@@ -41,7 +41,7 @@ func subscribeConfigGet(configGet func([]DeviceConfig)) {
 			MqttPublish(topicSend, "1")
 
 			configCacheMap(deviceConfig)
-			stopAllCronJob()
+			stopAllCron()
 			configGet(deviceConfig)
 		}
 	})

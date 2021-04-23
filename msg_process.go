@@ -15,7 +15,7 @@ func SendDataMessage(devieId, groupNameEn, version string, time int64, dataMap [
 		}
 	}
 	dataCollect := DataCollect{
-		Gp:  groupNameEn,
+		Gp: groupNameEn,
 		Id: devieId,
 		T:  time,
 		V:  version,
@@ -23,14 +23,30 @@ func SendDataMessage(devieId, groupNameEn, version string, time int64, dataMap [
 	}
 	jsonBytes, err := json.Marshal(dataCollect)
 	if err != nil {
-		log.Println(err)
+		log.Println("dataCollect json Marshal", err)
 		return
 	}
 	topic := fmt.Sprintf(TopicSendCollectDataMsg, mapperName, tenantIdMap[devieId], devieId)
 	MqttPublish(topic, string(jsonBytes))
 }
 
-func SendOnlineMessage(devieId, msg string) {
+func SendOnlineMessage(devieId, nodeId string, status bool) {
+	s := 0 //设备不在线
+	if status {
+		s = 1 //在线
+	}
+	dataOnline := DataOnline{
+		DId: devieId,
+		GId: nodeId,
+		G: tenantIdMap[devieId],
+		S: s,
+		T: GetTimestamp(),
+	}
+	jsonBytes, err := json.Marshal(dataOnline)
+	if err != nil {
+		log.Println("dataOnline json Marshal", err)
+		return
+	}
 	topic := fmt.Sprintf(TopicSendOnlineStateUp, devieId)
-	MqttPublish(topic, msg)
+	MqttPublish(topic, string(jsonBytes))
 }

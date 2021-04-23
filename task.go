@@ -5,18 +5,23 @@ import (
 	"github.com/robfig/cron"
 )
 
-type FuncCollect func() string
+type FuncCollect func() []Collect
 
-func (f FuncCollect) collect() {
-	aaaa := f()
-	fmt.Printf("collect======%v\n", aaaa)
+func (f FuncCollect) collectDev() {
+	//得到定时任务结果
+	collects := f()
+	for _, co := range collects {
+		//发送数据mqtt
+		SendDataMessage(co.DevieId, co.GroupNameEn, co.Version, GetTimestamp(), co.DataMap)
+	}
 }
 
-type FuncOnline func() string
+type FuncOnline func() Online
 
-func (f FuncOnline) online() {
-	bbb := f()
-	fmt.Printf("collect======%v\n", bbb)
+func (f FuncOnline) onlineDev() {
+	online := f()
+	//发送在线状态mqtt
+	SendOnlineMessage(online.DevieId, online.NodeId, online.Status)
 }
 
 /**
@@ -40,22 +45,22 @@ func stopAskConfigTask() {
 }
 
 /**
-  启动定时任务
+  启动定时任务 设备数据采集定时任务 设备在线离线定时任务
 */
-func StartCronJob(cronKey string, cycle int64, collectF FuncCollect, onlineF FuncOnline) {
+func StartAllCron(cronKey string, cycle int64, collectF FuncCollect, onlineF FuncOnline) {
 	//设备数据采集
 	cronDev := cron.New()
 	// 添加定时任务 ms/1000=s
 	s := cycle / 1000
 	second := fmt.Sprintf("@every %ds", s)
-	cronDev.AddFunc(second, collectF.collect)
+	cronDev.AddFunc(second, collectF.collectDev)
 	cronDev.Start()
 	cronDevices[cronKey] = cronDev
 
 	//设备在线离线
 	cronOnline := cron.New()
 	// 添加定时任务 1分钟执行一次
-	cronOnline.AddFunc("@every 2s", onlineF.online)
+	cronOnline.AddFunc("@every 1m", onlineF.onlineDev)
 	cronOnline.Start()
 	cronOnlines[cronKey] = cronOnline
 }
@@ -63,7 +68,7 @@ func StartCronJob(cronKey string, cycle int64, collectF FuncCollect, onlineF Fun
 /**
   停止定时任务
 */
-func StopCronJob(cronKey string) {
+func stopCron(cronKey string) {
 	c := cronDevices[cronKey]
 	if c != nil {
 		c.Stop()
@@ -80,7 +85,7 @@ func StopCronJob(cronKey string) {
 /**
   停止所有定时任务
 */
-func stopAllCronJob() {
+func stopAllCron() {
 	for _, cd := range cronDevices {
 		if cd != nil {
 			cd.Stop()
