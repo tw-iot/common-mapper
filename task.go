@@ -5,13 +5,15 @@ import (
 	"github.com/robfig/cron"
 )
 
-type FuncCollect func() Collect
+type FuncCollect func() []Collect
 
 func (f FuncCollect) collectDev() {
 	//得到定时任务结果
-	collect := f()
-	//发送数据mqtt
-	SendDataMessage(collect.DevieId, collect.GroupNameEn, collect.Version, GetTimestamp(), collect.DataMap)
+	collects := f()
+	for _, co := range collects {
+		//发送数据mqtt
+		SendDataMessage(co.DevieId, co.GroupNameEn, co.Version, GetTimestamp(), co.DataMap)
+	}
 }
 
 type FuncOnline func() Online
