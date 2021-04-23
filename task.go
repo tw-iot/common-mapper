@@ -5,6 +5,19 @@ import (
 	"github.com/robfig/cron"
 )
 
+// 函数定义为类型
+type FuncCollect func() string
+
+func (f FuncCollect) collect() {
+	aaaa := f()
+	fmt.Printf("collect======", aaaa)
+}
+
+func (f FuncCollect) online() {
+	aaaa := f()
+	fmt.Printf("online======", aaaa)
+}
+
 /**
   发送 采集程序询问采集配置 定时任务
 */
@@ -21,34 +34,34 @@ func startAskConfigTask(projectName string) {
 /**
   停止 采集程序询问采集配置 定时任务
 */
-func stopAskConfigTask()  {
+func stopAskConfigTask() {
 	cronAskConfig.Stop()
 }
 
 /**
   启动定时任务
- */
-func StartCronJob(cronKey string, cycle int64, collect func(), online func()) {
+*/
+func StartCronJob(cronKey string, cycle int64, collect FuncCollect) {
 	//设备数据采集
 	cronDev := cron.New()
 	// 添加定时任务 ms/1000=s
 	s := cycle / 1000
 	second := fmt.Sprintf("@every %ds", s)
-	cronDev.AddFunc(second, collect)
+	cronDev.AddFunc(second, collect.collect)
 	cronDev.Start()
 	cronDevices[cronKey] = cronDev
 
 	//设备在线离线
 	cronOnline := cron.New()
 	// 添加定时任务 1分钟执行一次
-	cronOnline.AddFunc("@every 1m", online)
+	cronOnline.AddFunc("@every 1m", collect.online)
 	cronOnline.Start()
 	cronOnlines[cronKey] = cronOnline
 }
 
 /**
   停止定时任务
- */
+*/
 func StopCronJob(cronKey string) {
 	c := cronDevices[cronKey]
 	if c != nil {

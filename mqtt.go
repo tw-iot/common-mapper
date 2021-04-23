@@ -31,7 +31,7 @@ func subscribeConfigGet(configGet func([]DeviceConfig)) {
 		var deviceConfig []DeviceConfig
 		err := json.Unmarshal(msg.Payload(), &deviceConfig)
 		if err != nil {
-			log.Println("json Unmarshal error", err.Error())
+			log.Println("json Unmarshal error:", err.Error())
 			return
 		}
 		if len(deviceConfig) > 0 {

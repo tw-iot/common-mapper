@@ -29,3 +29,8 @@ func SendDataMessage(devieId, groupNameEn, version string, time int64, dataMap [
 	topic := fmt.Sprintf(TopicSendCollectDataMsg, mapperName, tenantIdMap[devieId], devieId)
 	MqttPublish(topic, string(jsonBytes))
 }
+
+func SendOnlineMessage(devieId, msg string) {
+	topic := fmt.Sprintf(TopicSendOnlineStateUp, devieId)
+	MqttPublish(topic, msg)
+}
