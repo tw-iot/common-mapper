@@ -9,14 +9,14 @@ type FuncCollect func() string
 
 func (f FuncCollect) collect() {
 	aaaa := f()
-	fmt.Printf("collect======", aaaa)
+	fmt.Printf("collect======%v\n", aaaa)
 }
 
 type FuncOnline func() string
 
 func (f FuncOnline) online() {
 	bbb := f()
-	fmt.Printf("online======", bbb)
+	fmt.Printf("collect======%v\n", bbb)
 }
 
 /**
@@ -55,7 +55,7 @@ func StartCronJob(cronKey string, cycle int64, collectF FuncCollect, onlineF Fun
 	//设备在线离线
 	cronOnline := cron.New()
 	// 添加定时任务 1分钟执行一次
-	cronOnline.AddFunc("@every 1m", onlineF.online)
+	cronOnline.AddFunc("@every 2s", onlineF.online)
 	cronOnline.Start()
 	cronOnlines[cronKey] = cronOnline
 }
