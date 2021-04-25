@@ -14,11 +14,18 @@ import (
  */
 func mqttInit(ip, username, password string, port int, configGet func([]DeviceConfig)) {
 	clientId := uuid.NewV4()
-	mqttInfo := mqtt_tw.NewMqttInfo(ip, username,
-		password, mapperName + fmt.Sprintf("%s", clientId), port)
-	mqtt_tw.MqttInit(&mqttInfo)
+	willTopic := fmt.Sprintf(TopicWillOnlineStateUp, mapperName)
+	willMsg := "0" //遗言为离线状态
+	mqttInfo := mqtt_tw.NewMqttInfoWill(ip, username,
+		password, mapperName + fmt.Sprintf("%s", clientId), willTopic, willMsg, port)
 
-	subscribeConfigGet(configGet)
+	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
+		//连接成功的回调
+		log.Println("mqtt connected success")
+		//订阅放在这里,断开后重新连接时,重新订阅
+		subscribeConfigGet(configGet)
+	}
+	mqtt_tw.MqttInit(&mqttInfo, messagePubHandler, connectHandler, connectLostHandler)
 }
 
 /**
@@ -52,6 +59,16 @@ func subscribeConfigGet(configGet func([]DeviceConfig)) {
 
 func MqttPublish(topic, payload string)  {
 	mqtt_tw.MqttTw.Publish(topic, 0, false, payload)
+}
+
+var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+	//全局 MQTT pub 消息处理
+	//log.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+}
+
+var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
+	//连接丢失的回调
+	log.Println("mqtt connect lost err: ", err)
 }
 
 /**
