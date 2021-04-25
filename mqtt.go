@@ -9,6 +9,8 @@ import (
 	"log"
 )
 
+var EdgeMqtt mqtt.Client
+
 /**
   mqtt 初始化
  */
@@ -25,7 +27,7 @@ func mqttInit(ip, username, password string, port int, configGet func([]DeviceCo
 		//订阅放在这里,断开后重新连接时,重新订阅
 		subscribeConfigGet(configGet)
 	}
-	mqtt_tw.MqttInit(&mqttInfo, messagePubHandler, connectHandler, connectLostHandler)
+	EdgeMqtt = mqtt_tw.MqttInit(&mqttInfo, messagePubHandler, connectHandler, connectLostHandler)
 }
 
 /**
