@@ -37,10 +37,10 @@ func subCustomize(subMap map[string]func(topic string, msg []byte))  {
 	if subMap == nil || len(subMap) == 0 {
 		return
 	}
-	for topic, subFun := range subMap {
+	for topic, _ := range subMap {
 		token := mqtt_tw.MqttTw.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message)  {
 			log.Printf("subCustomize message: %s from topic: %s\n", msg.Payload(), msg.Topic())
-			subFun(msg.Topic(), msg.Payload())
+			subMap[msg.Topic()](msg.Topic(), msg.Payload())
 		})
 		if token.Wait() && token.Error() != nil {
 			log.Println("subCustomize token err: ", token.Error())
