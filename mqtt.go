@@ -13,7 +13,7 @@ import (
   mqtt 初始化
  */
 func mqttInit(ip, username, password string, port int, configGet func([]DeviceConfig),
-	subTopics []string, subFuns []func(topic string, msg []byte)) {
+	subMap map[string]func(topic string, msg []byte)) {
 	clientId := uuid.NewV4()
 	willTopic := fmt.Sprintf(TopicWillOnlineStateUp, mapperName)
 	willMsg := "0" //遗言为离线状态
@@ -25,7 +25,7 @@ func mqttInit(ip, username, password string, port int, configGet func([]DeviceCo
 		log.Println("mqtt connected success")
 		//订阅放在这里,断开后重新连接时,重新订阅
 		subscribeConfigGet(configGet)
-		subCustomize(subTopics, subFuns)
+		subCustomize(subMap)
 	}
 	mqtt_tw.MqttInit(&mqttInfo, messagePubHandler, connectHandler, connectLostHandler)
 }
@@ -33,17 +33,14 @@ func mqttInit(ip, username, password string, port int, configGet func([]DeviceCo
 /**
   自定义订阅
  */
-func subCustomize(subTopics []string, subFuns []func(topic string, msg []byte))  {
-	if subTopics == nil || subFuns == nil {
+func subCustomize(subMap map[string]func(topic string, msg []byte))  {
+	if subMap == nil || len(subMap) == 0 {
 		return
 	}
-	if len(subTopics) != len(subFuns) {
-		return
-	}
-	for index, topic := range subTopics {
+	for topic, subFun := range subMap {
 		token := mqtt_tw.MqttTw.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message)  {
 			log.Printf("subCustomize message: %s from topic: %s\n", msg.Payload(), msg.Topic())
-			subFuns[index](msg.Topic(), msg.Payload())
+			subFun(msg.Topic(), msg.Payload())
 		})
 		if token.Wait() && token.Error() != nil {
 			log.Println("subCustomize token err: ", token.Error())
