@@ -7,6 +7,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/tw-iot/mqtt_tw"
 	"log"
+	"reflect"
 )
 
 /**
@@ -37,9 +38,14 @@ func subCustomize(subMap map[string]func(topic string, msg []byte))  {
 	if subMap == nil || len(subMap) == 0 {
 		return
 	}
-	for topic, _ := range subMap {
+	for topic, subFun := range subMap {
 		token := mqtt_tw.MqttTw.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message)  {
-			log.Printf("subCustomize message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+			funType := reflect.TypeOf(subFun)
+			funName := funType.Name()
+			log.Printf("subCustomize %s message: %s from topic: %s\n", funName, msg.Payload(), msg.Topic())
+			// 经测试不能直接调用, 会覆盖上一个订阅topic的方法,导致所有订阅的topic,只会发到最后一个方法
+			//subFun(msg.Topic(), msg.Payload())
+			// 这种方式,可以准确调用对应方法
 			subMap[msg.Topic()](msg.Topic(), msg.Payload())
 		})
 		if token.Wait() && token.Error() != nil {
