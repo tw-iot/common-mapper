@@ -36,4 +36,8 @@ type Item struct {
 	SlaveId         string `json:"slave_id"`
 	Title           string `json:"title"`
 	UniqueKey       string `json:"unique_key"`
+	QuerySql        string `json:"query_sql"`
+	Field2          string `json:"field2"`
+	Field3          string `json:"field3"`
+	Field4          map[string]interface{} `json:"field4"`
 }
