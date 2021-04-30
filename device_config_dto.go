@@ -26,14 +26,18 @@ type TwConfig struct {
 }
 
 type Item struct {
-	AuthType        int    `json:"auth_type"`
-	Code            string `json:"code"`
-	ConfigItemId    string `json:"config_item_id"`
-	ConfigVersionId string `json:"config_version_id"`
-	DataRange       string `json:"data_range"`
-	DataType        string `json:"data_type"`
-	OrderNo         int    `json:"order_no"`
-	SlaveId         string `json:"slave_id"`
-	Title           string `json:"title"`
-	UniqueKey       string `json:"unique_key"`
+	AuthType        int                    `json:"auth_type"`
+	Code            string                 `json:"code"`
+	ConfigItemId    string                 `json:"config_item_id"`
+	ConfigVersionId string                 `json:"config_version_id"`
+	DataRange       string                 `json:"data_range"`
+	DataType        string                 `json:"data_type"`
+	OrderNo         int                    `json:"order_no"`
+	SlaveId         string                 `json:"slave_id"`
+	Title           string                 `json:"title"`
+	UniqueKey       string                 `json:"unique_key"`
+	QuerySql        string                 `json:"query_sql"`
+	Field2          string                 `json:"field2"`
+	Field3          string                 `json:"field3"`
+	Field4          map[string]interface{} `json:"field4"`
 }
