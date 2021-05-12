@@ -59,8 +59,34 @@ func StartAllCron(cronKey string, cycle int64, collectF FuncCollect, onlineF Fun
 
 	//设备在线离线
 	cronOnline := cron.New()
-	// 添加定时任务 1分钟执行一次
-	cronOnline.AddFunc("@every 1m", onlineF.onlineDev)
+	// 添加定时任务 1秒执行一次
+	cronOnline.AddFunc("@every 1s", onlineF.onlineDev)
+	cronOnline.Start()
+	cronOnlines[cronKey] = cronOnline
+}
+
+/**
+  启动定时任务 设备数据采集定时任务
+*/
+func StartCollectCron(cronKey string, cycle int64, collectF FuncCollect) {
+	//设备数据采集
+	cronDev := cron.New()
+	// 添加定时任务 ms/1000=s
+	s := cycle / 1000
+	second := fmt.Sprintf("@every %ds", s)
+	cronDev.AddFunc(second, collectF.collectDev)
+	cronDev.Start()
+	cronDevices[cronKey] = cronDev
+}
+
+/**
+  启动定时任务 设备在线离线定时任务
+*/
+func StartOnlineCron(cronKey string, onlineF FuncOnline) {
+	//设备在线离线
+	cronOnline := cron.New()
+	// 添加定时任务 1秒执行一次
+	cronOnline.AddFunc("@every 1s", onlineF.onlineDev)
 	cronOnline.Start()
 	cronOnlines[cronKey] = cronOnline
 }
