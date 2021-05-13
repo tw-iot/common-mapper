@@ -39,5 +39,5 @@ type Item struct {
 	QuerySql        string                 `json:"query_sql"`
 	Field2          string                 `json:"field2"`
 	Field3          string                 `json:"field3"`
-	Field4          map[string]interface{} `json:"field4"`
+	Field4          string                 `json:"field4"`
 }
