@@ -1,5 +1,7 @@
 package common_mapper
 
+import "gopkg.in/ammario/temp.v2"
+
 type DataCollect struct {
 	Gp string                   `json:"gp"`
 	Id string                   `json:"id"`
@@ -27,4 +29,9 @@ type Online struct {
 	DevieId string
 	NodeId  string
 	Status  bool
+}
+
+type onlineData struct {
+	status int
+	temp.T
 }

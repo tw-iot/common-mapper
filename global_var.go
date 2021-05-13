@@ -9,13 +9,15 @@ var (
 	tenantIdMap map[string]string
 	//key=设备id,value=labels
 	labelMap map[string]map[string]interface{}
+	//过期map,key=设备id,value=设备在线离线状态
+	expireMap map[string]onlineData
 
 	//采集程序启动要配置 定时任务
-	 cronAskConfig *cron.Cron
+	cronAskConfig *cron.Cron
 	//设备读取数据定时任务
-	 cronDevices map[string]*cron.Cron
+	cronDevices map[string]*cron.Cron
 	//设备在线定时任务
-	 cronOnlines map[string]*cron.Cron
+	cronOnlines map[string]*cron.Cron
 )
 
 func globalInit(projectName string)  {
@@ -24,6 +26,7 @@ func globalInit(projectName string)  {
 	labelMap = make(map[string]map[string]interface{})
 	cronDevices = make(map[string]*cron.Cron)
 	cronOnlines = make(map[string]*cron.Cron)
+	expireMap = make(map[string]onlineData)
 }
 
 func configCacheMap(deviceConfig []DeviceConfig) {
