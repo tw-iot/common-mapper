@@ -31,7 +31,7 @@ func SendDataMessage(devieId, groupNameEn, version string, time int64, dataMap [
 		log.Println("dataCollect json Marshal", err)
 		return
 	}
-	topic := fmt.Sprintf(TopicSendCollectDataMsg, mapperName, tenantIdMap[devieId], devieId)
+	topic := fmt.Sprintf(TopicSendCollectDataMsg, mapperName, mapperName, tenantIdMap[devieId], devieId)
 	MqttPublish(topic, string(jsonBytes))
 }
 

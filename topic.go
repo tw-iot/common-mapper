@@ -10,7 +10,7 @@ const (
 	TopicSendConfigAsk = "$tw/mapper/%s/config/ask"
 
 	//发送 采集数据 上报消息
-	TopicSendCollectDataMsg = "$tw/msg/pod/%s/tenant/%s/device/%s/twin/up"
+	TopicSendCollectDataMsg = "$tw/msg/mapper/%s/pod/%s/tenant/%s/device/%s/twin/up"
 
 	//发送 采集程序收到配置后反馈通知
 	TopicSendConfigNotify = "$tw/mapper/%s/config/notify"
