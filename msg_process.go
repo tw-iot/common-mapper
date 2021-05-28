@@ -73,7 +73,8 @@ func checkExpireMap(deviceId string, status int) bool {
 		//true 已经过期
 		if temp.Expired(&od) {
 			flag = true
-
+			//一定要从map里删除,不然过期后,每次进这里
+			delete(expireMap, deviceId)
 		} else {
 			//没有过期,比较状态是否一致
 			if status != od.status {
