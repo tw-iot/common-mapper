@@ -1,4 +1,4 @@
-module common-mapper
+module github.com/tw-iot/common-mapper
 
 go 1.15
 
