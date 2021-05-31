@@ -75,6 +75,8 @@ func checkExpireMap(deviceId string, status int) bool {
 			flag = true
 			//一定要从map里删除,不然过期后,每次进这里
 			delete(expireMap, deviceId)
+			//删除后在添加,不然下一秒进来,又发一次
+			putExpireMap(deviceId, status)
 		} else {
 			//没有过期,比较状态是否一致
 			if status != od.status {
