@@ -8,6 +8,8 @@ import (
 	"github.com/tw-iot/mqtt_tw"
 	"log"
 	"reflect"
+	"regexp"
+	"strings"
 )
 
 /**
@@ -38,6 +40,34 @@ func subCustomize(subMap map[string]func(topic string, msg []byte))  {
 	if subMap == nil || len(subMap) == 0 {
 		return
 	}
+
+	//保存特殊订阅的topic 正则表达式
+	for topic, _ := range subMap {
+		if strings.Contains(topic, "#") {
+			// topic= abc/#
+			str := strings.Replace(topic, "#", "(.*)", -1 )
+			// abc/(.*)
+			//^abc/(.*) 正则表达式 ^以什么开头 $以什么结尾
+			netStr := fmt.Sprintf("%s%s", "^", str)
+			mqttHashTagTopicMap[netStr] = topic
+		}
+		if strings.Contains(topic, "+") {
+			// topic= abc/+/123/+/456
+			str := strings.Replace(topic, "+", "(\\w)+", -1 )
+			netStr := str
+			if strings.Index(topic, "+") != 0 {
+				//如果+号不是第一个字符
+				netStr = fmt.Sprintf("%s%s", "^", str)
+			}
+			if strings.LastIndex(topic, "+") != len(topic) -1 {
+				//如果+号不是最后一个字符
+				netStr = fmt.Sprintf("%s%s", str, "$")
+			}
+			//^abc/(\w)+/123/(\w)+/456$ 正则表达式 ^以什么开头 $以什么结尾
+			mqttPlusTagTopicMap[netStr] = topic
+		}
+	}
+
 	for topic, subFun := range subMap {
 		token := mqtt_tw.MqttTw.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message)  {
 			funType := reflect.TypeOf(subFun)
@@ -47,8 +77,25 @@ func subCustomize(subMap map[string]func(topic string, msg []byte))  {
 			//subFun(msg.Topic(), msg.Payload())
 			// 这种方式,可以准确调用对应方法
 			//如果订阅的topic带aaa/#号,来的topic是aaa/123,则map找不到对应key,报空指针
-			//subMap[msg.Topic()](msg.Topic(), msg.Payload())
-			subMap[topic](msg.Topic(), msg.Payload())
+			if _, ok := subMap[msg.Topic()]; ok {
+				//全匹配
+				subMap[msg.Topic()](msg.Topic(), msg.Payload())
+			} else {
+				//#号匹配
+				for reg, topicHashtag := range mqttHashTagTopicMap {
+					match, _ := regexp.MatchString(reg, msg.Topic())
+					if match {
+						subMap[topicHashtag](msg.Topic(), msg.Payload())
+					}
+				}
+				//+号匹配
+				for reg, topicPlustag := range mqttPlusTagTopicMap {
+					match, _ := regexp.MatchString(reg, msg.Topic())
+					if match {
+						subMap[topicPlustag](msg.Topic(), msg.Payload())
+					}
+				}
+			}
 		})
 		if token.Wait() && token.Error() != nil {
 			log.Println("subCustomize token err: ", token.Error())

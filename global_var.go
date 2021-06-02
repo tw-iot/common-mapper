@@ -12,6 +12,11 @@ var (
 	//过期map,key=设备id,value=设备在线离线状态
 	expireMap map[string]onlineData
 
+	//mqtt监听的topic 带#号
+	mqttHashTagTopicMap map[string]string
+	//mqtt监听的topic 带+号
+	mqttPlusTagTopicMap map[string]string
+
 	//采集程序启动要配置 定时任务
 	cronAskConfig *cron.Cron
 	//设备读取数据定时任务
@@ -22,11 +27,16 @@ var (
 
 func globalInit(projectName string)  {
 	mapperName = projectName
+
 	tenantIdMap = make(map[string]string)
 	labelMap = make(map[string]map[string]interface{})
+	expireMap = make(map[string]onlineData)
+
+	mqttHashTagTopicMap = make(map[string]string)
+	mqttPlusTagTopicMap = make(map[string]string)
+
 	cronDevices = make(map[string]*cron.Cron)
 	cronOnlines = make(map[string]*cron.Cron)
-	expireMap = make(map[string]onlineData)
 }
 
 func configCacheMap(deviceConfig []DeviceConfig) {
