@@ -46,7 +46,9 @@ func subCustomize(subMap map[string]func(topic string, msg []byte))  {
 			// 经测试不能直接调用, 会覆盖上一个订阅topic的方法,导致所有订阅的topic,只会发到最后一个方法
 			//subFun(msg.Topic(), msg.Payload())
 			// 这种方式,可以准确调用对应方法
-			subMap[msg.Topic()](msg.Topic(), msg.Payload())
+			//如果订阅的topic带aaa/#号,来的topic是aaa/123,则map找不到对应key,报空指针
+			//subMap[msg.Topic()](msg.Topic(), msg.Payload())
+			subMap[topic](msg.Topic(), msg.Payload())
 		})
 		if token.Wait() && token.Error() != nil {
 			log.Println("subCustomize token err: ", token.Error())
