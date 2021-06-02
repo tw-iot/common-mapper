@@ -53,15 +53,14 @@ func subCustomize(subMap map[string]func(topic string, msg []byte))  {
 		}
 		if strings.Contains(topic, "+") {
 			// topic= abc/+/123/+/456
-			str := strings.Replace(topic, "+", "(\\w)+", -1 )
-			netStr := str
+			netStr := strings.Replace(topic, "+", "(\\w)+", -1 )
 			if strings.Index(topic, "+") != 0 {
 				//如果+号不是第一个字符
-				netStr = fmt.Sprintf("%s%s", "^", str)
+				netStr = fmt.Sprintf("%s%s", "^", netStr)
 			}
 			if strings.LastIndex(topic, "+") != len(topic) -1 {
 				//如果+号不是最后一个字符
-				netStr = fmt.Sprintf("%s%s", str, "$")
+				netStr = fmt.Sprintf("%s%s", netStr, "$")
 			}
 			//^abc/(\w)+/123/(\w)+/456$ 正则表达式 ^以什么开头 $以什么结尾
 			mqttPlusTagTopicMap[netStr] = topic
