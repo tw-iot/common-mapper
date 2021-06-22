@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"gopkg.in/ammario/temp.v2"
 	"log"
+	"strings"
 	"time"
 )
 
 /*
  发送采集的数据
- */
+*/
 func SendDataMessage(devieId, groupNameEn, version string, time int64, dataMap []map[string]interface{}) {
 	//添加label
 	lMap := labelMap[devieId]
@@ -19,8 +20,15 @@ func SendDataMessage(devieId, groupNameEn, version string, time int64, dataMap [
 			dm[k] = v
 		}
 	}
+
+	tenantId := tenantIdMap[devieId]
+	index := strings.Index(tenantId, ".")
+	group := tenantId[:index]
+	area := tenantId[index+1:]
+
 	dataCollect := DataCollect{
 		Gp: groupNameEn,
+		G:  area,
 		Id: devieId,
 		T:  time,
 		V:  version,
@@ -31,7 +39,7 @@ func SendDataMessage(devieId, groupNameEn, version string, time int64, dataMap [
 		log.Println("dataCollect json Marshal", err)
 		return
 	}
-	topic := fmt.Sprintf(TopicSendCollectDataMsg, mapperName, mapperName, tenantIdMap[devieId], devieId)
+	topic := fmt.Sprintf(TopicSendCollectDataMsg, mapperName, mapperName, group, devieId)
 	MqttPublish(topic, string(jsonBytes))
 }
 
@@ -46,9 +54,9 @@ func SendOnlineMessage(devieId, nodeId string, status bool) {
 	dataOnline := DataOnline{
 		DId: devieId,
 		GId: nodeId,
-		G: tenantIdMap[devieId],
-		S: s,
-		T: GetTimestamp(),
+		G:   tenantIdMap[devieId],
+		S:   s,
+		T:   GetTimestamp(),
 	}
 	jsonBytes, err := json.Marshal(dataOnline)
 	if err != nil {
@@ -65,7 +73,7 @@ func SendOnlineMessage(devieId, nodeId string, status bool) {
   如果设备在线离线状态相同,则5分钟发一次
   true:过期,或状态不一致
   false: 没过期
- */
+*/
 func checkExpireMap(deviceId string, status int) bool {
 	flag := false
 	//判断map里设备存在
@@ -96,10 +104,10 @@ func checkExpireMap(deviceId string, status int) bool {
 
 /**
   设置过期时间5分钟,并保存到map
- */
-func putExpireMap(deviceId string, status int)  {
+*/
+func putExpireMap(deviceId string, status int) {
 	onlineD := onlineData{status: status}
 	//5分钟过期
-	temp.ExpireAfter(&onlineD, time.Second * 300)
+	temp.ExpireAfter(&onlineD, time.Second*300)
 	expireMap[deviceId] = onlineD
 }

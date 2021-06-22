@@ -4,6 +4,7 @@ import "gopkg.in/ammario/temp.v2"
 
 type DataCollect struct {
 	Gp string                   `json:"gp"`
+	G  string                   `json:"g"`
 	Id string                   `json:"id"`
 	T  int64                    `json:"t"`
 	V  string                   `json:"v"`
