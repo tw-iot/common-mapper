@@ -45,7 +45,7 @@ func subCustomize(subMap map[string]func(topic string, msg []byte))  {
 	for topic, _ := range subMap {
 		if strings.Index(topic, "$") == 0 {
 			//如果topic是$开头
-			topic = strings.Replace(topic, "$", "\\$", -1 )
+			topic = strings.Replace(topic, "$", "\\\\$", -1 )
 		}
 		if strings.Contains(topic, "#") {
 			// topic= abc/#
