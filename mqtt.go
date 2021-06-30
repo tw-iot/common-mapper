@@ -57,7 +57,7 @@ func subCustomize(subMap map[string]func(topic string, msg []byte))  {
 		}
 		if strings.Contains(topic, "+") {
 			// topic= abc/+/123/+/456
-			netStr := strings.Replace(topic, "+", "(\\w)+", -1 )
+			netStr := strings.Replace(topic, "+", "(\\\\w)+", -1 )
 			if strings.Index(topic, "+") != 0 {
 				//如果+号不是第一个字符
 				netStr = fmt.Sprintf("%s%s", "^", netStr)
