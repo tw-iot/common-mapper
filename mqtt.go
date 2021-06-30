@@ -43,26 +43,27 @@ func subCustomize(subMap map[string]func(topic string, msg []byte))  {
 
 	//保存特殊订阅的topic 正则表达式
 	for topic, _ := range subMap {
-		if strings.Index(topic, "$") == 0 {
+		netTopic := topic
+		if strings.Index(netTopic, "$") == 0 {
 			//如果topic是$开头
-			topic = strings.Replace(topic, "$", "\\\\$", -1 )
+			netTopic = strings.Replace(netTopic, "$", "\\$", -1 )
 		}
-		if strings.Contains(topic, "#") {
+		if strings.Contains(netTopic, "#") {
 			// topic= abc/#
-			str := strings.Replace(topic, "#", "(.*)", -1 )
+			str := strings.Replace(netTopic, "#", "(.*)", -1 )
 			// abc/(.*)
 			//^abc/(.*) 正则表达式 ^以什么开头 $以什么结尾
 			netStr := fmt.Sprintf("%s%s", "^", str)
 			mqttHashTagTopicMap[netStr] = topic
 		}
-		if strings.Contains(topic, "+") {
+		if strings.Contains(netTopic, "+") {
 			// topic= abc/+/123/+/456
-			netStr := strings.Replace(topic, "+", "(\\\\w)+", -1 )
-			if strings.Index(topic, "+") != 0 {
+			netStr := strings.Replace(netTopic, "+", "(\\w)+", -1 )
+			if strings.Index(netTopic, "+") != 0 {
 				//如果+号不是第一个字符
 				netStr = fmt.Sprintf("%s%s", "^", netStr)
 			}
-			if strings.LastIndex(topic, "+") != len(topic) -1 {
+			if strings.LastIndex(netTopic, "+") != len(netTopic) -1 {
 				//如果+号不是最后一个字符
 				netStr = fmt.Sprintf("%s%s", netStr, "$")
 			}
