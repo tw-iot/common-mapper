@@ -7,16 +7,13 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/tw-iot/mqtt_tw"
 	"log"
-	"reflect"
-	"regexp"
-	"strings"
 )
 
 /**
   mqtt 初始化
  */
 func mqttInit(ip, username, password string, port int, configGet func([]DeviceConfig),
-	subMap map[string]func(topic string, msg []byte)) {
+	subMap map[string]func(client mqtt.Client, msg mqtt.Message)) {
 	clientId := uuid.NewV4()
 	willTopic := fmt.Sprintf(TopicWillOnlineStateUp, mapperName)
 	willMsg := "0" //遗言为离线状态
@@ -36,73 +33,15 @@ func mqttInit(ip, username, password string, port int, configGet func([]DeviceCo
 /**
   自定义订阅
  */
-func subCustomize(subMap map[string]func(topic string, msg []byte))  {
+func subCustomize(subMap map[string]func(client mqtt.Client, msg mqtt.Message))  {
 	if subMap == nil || len(subMap) == 0 {
 		return
 	}
 
-	//保存特殊订阅的topic 正则表达式
-	for topic, _ := range subMap {
-		netTopic := topic
-		if strings.Index(netTopic, "$") == 0 {
-			//如果topic是$开头
-			netTopic = strings.Replace(netTopic, "$", "\\$", -1 )
-		}
-		if strings.Contains(netTopic, "#") {
-			// topic= abc/#
-			str := strings.Replace(netTopic, "#", "(.*)", -1 )
-			// abc/(.*)
-			//^abc/(.*) 正则表达式 ^以什么开头 $以什么结尾
-			netStr := fmt.Sprintf("%s%s", "^", str)
-			mqttHashTagTopicMap[netStr] = topic
-		}
-		if strings.Contains(netTopic, "+") {
-			// topic= abc/+/123/+/456
-			netStr := strings.Replace(netTopic, "+", "(\\w)+", -1 )
-			if strings.Index(netTopic, "+") != 0 {
-				//如果+号不是第一个字符
-				netStr = fmt.Sprintf("%s%s", "^", netStr)
-			}
-			if strings.LastIndex(netTopic, "+") != len(netTopic) -1 {
-				//如果+号不是最后一个字符
-				netStr = fmt.Sprintf("%s%s", netStr, "$")
-			}
-			//^abc/(\w)+/123/(\w)+/456$ 正则表达式 ^以什么开头 $以什么结尾
-			mqttPlusTagTopicMap[netStr] = topic
-		}
-	}
-
 	for topic, subFun := range subMap {
-		token := mqtt_tw.MqttTw.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message)  {
-			funType := reflect.TypeOf(subFun)
-			funName := funType.Name()
-			log.Printf("subCustomize %s message: %s from topic: %s\n", funName, msg.Payload(), msg.Topic())
-			// 经测试不能直接调用, 会覆盖上一个订阅topic的方法,导致所有订阅的topic,只会发到最后一个方法
-			//subFun(msg.Topic(), msg.Payload())
-			// 这种方式,可以准确调用对应方法
-			//如果订阅的topic带aaa/#号,来的topic是aaa/123,则map找不到对应key,报空指针
-			if _, ok := subMap[msg.Topic()]; ok {
-				//全匹配
-				subMap[msg.Topic()](msg.Topic(), msg.Payload())
-			} else {
-				//#号匹配
-				for reg, topicHashtag := range mqttHashTagTopicMap {
-					match, _ := regexp.MatchString(reg, msg.Topic())
-					if match {
-						subMap[topicHashtag](msg.Topic(), msg.Payload())
-					}
-				}
-				//+号匹配
-				for reg, topicPlustag := range mqttPlusTagTopicMap {
-					match, _ := regexp.MatchString(reg, msg.Topic())
-					if match {
-						subMap[topicPlustag](msg.Topic(), msg.Payload())
-					}
-				}
-			}
-		})
+		token := mqtt_tw.MqttTw.Subscribe(topic, 0, subFun)
 		if token.Wait() && token.Error() != nil {
-			log.Println("subCustomize token err: ", token.Error())
+			log.Printf("subCustomize topic: %s token err: %s\n", topic, token.Error())
 		}
 	}
 }
