@@ -1,6 +1,9 @@
 package common_mapper
 
-import "github.com/robfig/cron"
+import (
+	"github.com/robfig/cron"
+	"time"
+)
 
 var (
 	mapperName string
@@ -23,6 +26,8 @@ var (
 	cronDevices map[string]*cron.Cron
 	//设备在线定时任务
 	cronOnlines map[string]*cron.Cron
+	//设备读取数据定时任务 毫秒级定时
+	tickerDevices map[string]*time.Ticker
 )
 
 func globalInit(projectName string)  {
@@ -37,6 +42,7 @@ func globalInit(projectName string)  {
 
 	cronDevices = make(map[string]*cron.Cron)
 	cronOnlines = make(map[string]*cron.Cron)
+	tickerDevices = make(map[string]*time.Ticker)
 }
 
 func configCacheMap(deviceConfig []DeviceConfig) {

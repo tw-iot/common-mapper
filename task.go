@@ -3,6 +3,7 @@ package common_mapper
 import (
 	"fmt"
 	"github.com/robfig/cron"
+	"time"
 )
 
 type FuncCollect func() []Collect
@@ -71,12 +72,29 @@ func StartAllCron(cronKey string, cycle int64, collectF FuncCollect, onlineF Fun
 func StartCollectCron(cronKey string, cycle int64, collectF FuncCollect) {
 	//设备数据采集
 	cronDev := cron.New()
-	// 添加定时任务 ms/1000=s
+	// 添加定时任务 ms/1000=s 秒
 	s := cycle / 1000
 	second := fmt.Sprintf("@every %ds", s)
 	cronDev.AddFunc(second, collectF.collectDev)
 	cronDev.Start()
 	cronDevices[cronKey] = cronDev
+}
+
+/**
+  启动定时任务 设备数据采集定时任务 毫秒级采集频率
+*/
+func StartCollectTicker(cronKey string, cycle int64, collectF FuncCollect) {
+	//设备数据采集   毫秒
+	ticker := time.NewTicker(time.Duration(cycle) * time.Millisecond)
+	go func(t *time.Ticker) {
+		for {
+			// 每cycleMillisecond 毫秒中从chan t.C 中读取一次
+			<- t.C
+			collectF.collectDev()
+		}
+	}(ticker)
+
+	tickerDevices[cronKey] = ticker
 }
 
 /**
@@ -95,17 +113,23 @@ func StartOnlineCron(cronKey string, onlineF FuncOnline) {
   停止定时任务
 */
 func stopCron(cronKey string) {
-	c := cronDevices[cronKey]
-	if c != nil {
-		c.Stop()
+	cd := cronDevices[cronKey]
+	if cd != nil {
+		cd.Stop()
 	}
 	co := cronOnlines[cronKey]
 	if co != nil {
 		co.Stop()
 	}
+	td := tickerDevices[cronKey]
+	if td != nil {
+		td.Stop()
+	}
+
 	//删除key
 	delete(cronDevices, cronKey)
 	delete(cronOnlines, cronKey)
+	delete(tickerDevices, cronKey)
 }
 
 /**
@@ -122,7 +146,14 @@ func stopAllCron() {
 			co.Stop()
 		}
 	}
+	for _, td := range tickerDevices {
+		if td != nil {
+			td.Stop()
+		}
+	}
+
 	//清空map
 	cronDevices = make(map[string]*cron.Cron)
 	cronOnlines = make(map[string]*cron.Cron)
+	tickerDevices = make(map[string]*time.Ticker)
 }
